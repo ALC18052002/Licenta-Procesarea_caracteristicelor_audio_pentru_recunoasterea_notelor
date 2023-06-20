@@ -4,31 +4,21 @@ import math
 import os
 import json
 
-SAMPLE_RATE = 22050
-SAMPLE_INTERVAL = 1.0 / SAMPLE_RATE
-N_FFT = 2048
-HOP_LENGTH = 512
 DATASET_PATH = 'dataset'
 
-
-
 def process_midi_file(midi_file):
+    mid = mido.MidiFile(midi_file)
 
     my_mid = mido.MidiFile()
-
-
     meta_track = mido.MidiTrack()
-
-    notes = []
-    mid = mido.MidiFile(midi_file)
-    length = mid.length
-    ticks_per_beat = mid.ticks_per_beat
-    current_time = 0
     tempo = mido.bpm2tempo(120)
     tempo_msg = mido.MetaMessage('set_tempo', tempo=tempo)
     meta_track.append(tempo_msg)
     my_mid.ticks_per_beat = mid.ticks_per_beat
     my_mid.tracks.append(meta_track)
+
+    current_time = 0
+    
     for track in mid.tracks:
         mytrack = mido.MidiTrack()
         for message in track:
@@ -58,7 +48,7 @@ def process_midi_file(midi_file):
 
 
     my_mid.save(midi_file)
-    return notes, length
+    return 0
 
 def process_dataset_midi_files(dataset_path):
     for i, (dirpath, dirnames, filenames) in enumerate(os.walk(dataset_path)):
