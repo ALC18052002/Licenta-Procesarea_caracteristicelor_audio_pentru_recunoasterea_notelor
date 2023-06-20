@@ -1,14 +1,10 @@
 import mido
-import numpy as np
-import math
 import json
 import os
 
 SAMPLE_RATE = 22050
-SAMPLE_INTERVAL = 1.0 / SAMPLE_RATE
 N_FFT = 2048
 HOP_LENGTH = 512
-FRAME_OFFSET = int( N_FFT / HOP_LENGTH)
 DATASET_PATH = 'dataset'
 JSON_PATH = 'dataset/midi_to_json.json'
 
@@ -17,9 +13,8 @@ def get_tempo(mid):
     for track in mid.tracks:
         for message in track:
             if message.type == 'set_tempo':
-                # The tempo value is stored in the "tempo" attribute of the message
                 tempo = message.tempo
-                return mido.tempo2bpm(tempo)  # Convert tempo to BPM
+                return mido.tempo2bpm(tempo)
     
     return None  
 
@@ -29,9 +24,9 @@ def process_midi_file(midi_file):
     ticks_per_beat = mid.ticks_per_beat
     tempo_bpm = get_tempo(mid)
     tempo = mido.bpm2tempo(tempo_bpm)
-    current_time = 0
     total_time_ticks = 0
-
+    number_of_samples = int( length * SAMPLE_RATE)
+    number_of_frames = int( number_of_samples / HOP_LENGTH)
 
     data = {
         "length":length,
@@ -40,10 +35,6 @@ def process_midi_file(midi_file):
         "labels": []
     }
 
-    number_of_samples = int( length * SAMPLE_RATE)
-    number_of_frames = int( number_of_samples / HOP_LENGTH)
-
-    raw_labels =  [ [set(), dict()] for _ in range(number_of_frames + 1) ]
     data["labels"] = [[],[]]*(number_of_frames + 2)
     for i in range (0 , number_of_frames + 1):
         data["labels"][i] = []
